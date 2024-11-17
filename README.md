@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Piis</title>
+</head>
+<body>
+    <ul>
+        <li>
+            <a href="./lr1/index.html"> Лабаработрная №1</a>
+        </li>
+        <li>
+            <a href="./lr2/index.html"> Лабаработрная №2</a>
+        </li>
+        <li>
+            <a href="./lr3/index.html"> Лабаработрная №3</a>
+        </li>
+        <li>
+            <a href="./lr4/index.html"> Лабаработрная №4</a>
+        </li>
+        <li>
+            <a href="./lr5/lab5.html"> Лабаработрная №5-6</a>
+        </li>
+        <li>
+            <a href="./lr7/index.html"> Лабаработрная №7</a>
+        </li>
+        <li>
+            <a href="./lr8/index.html"> Лабаработрная №8</a>
+        </li>
+    </ul>
+</body>
+</html>
