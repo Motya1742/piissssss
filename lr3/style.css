@@ -1,0 +1,79 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+.product-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between; 
+  max-width: 1200px; 
+  margin: 0 auto; 
+  padding: 20px; 
+}
+
+.shirt {
+  border: 2px solid blue; 
+  padding: 10px;
+  width: calc(33.33% - 20px); /* Уменьшаем ширину карточки до 33.33% с учетом отступа */
+  box-sizing: border-box; 
+  margin-bottom: 20px; 
+  text-align: center;
+  border-radius: 10px; 
+}
+
+
+.shirt img {
+  width: 40%; 
+  height: auto;
+}
+
+button {
+  margin: 5px;
+  background-color: blue; 
+  color: rgb(255, 255, 255); 
+  border: none; 
+  padding: 10px; 
+  cursor: pointer; 
+}
+
+.modal {
+  display: none; /* Скрывать по умолчанию */
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  width: 100%; 
+  height: 100%; 
+  overflow: auto; /* Включает прокрутку при необходимости */
+  background-color: rgb(0, 0, 0); 
+  background-color: rgba(0, 0, 0, 0.4); 
+}
+
+.modal-content {
+  background-color: #fefefe;
+  margin: 15% auto; /* 15% сверху и центр по горизонтали */
+  padding: 20px;
+  border: 1px solid #888888;
+  width: 80%; /* Ширина модального окна */
+  text-align: center;
+}
+
+.shirt-image {
+  width: 30%; 
+  height: auto;
+  margin: 10px;
+}
+
+.close {
+  color: #aaa;
+  font-size: 22px; 
+  cursor: pointer;
+}
+
+.close:hover,
+.close:focus {
+  color: black;
+  text-decoration: underline; /* Добавляем подчеркивание при наведении */
+}
