@@ -1,3 +1,3 @@
 # Piis
 
-[Открыть лабораторную работу (index.html)](./index.html)
+[Лабораторные работы](https://motya1742.github.io/piissssss/)
