@@ -74,6 +74,7 @@ function onTouchEnd() {
 function finishDragging() {
     if (activeElement) {
         originalPosition[activeElement.id] = getElementPosition(activeElement);
+        activeElement.style.backgroundColor = 'red';
         activeElement = null;
     }
     removeDraggingListeners();
