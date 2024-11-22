@@ -1,141 +1,126 @@
-// Получаем все элементы с классом 'target'
 const targets = document.querySelectorAll('.target');
-let activeElement = null;
+let isDragging = false;
+let isSticky = false;
 let offsetX, offsetY;
-let originalPosition = {};
-let followFinger = false;
+let currentElement = null;
+let originalPosition = { top: 0, left: 0 };
+let touchStartPosition = { x: 0, y: 0 };
+const minSize = 40; 
 
-// Функция для получения текущих координат элемента
-function getElementPosition(element) {
-    return {
-        top: parseInt(element.style.top) || 0,
-        left: parseInt(element.style.left) || 0
-    };
-}
 
-// Обработчик для начала перетаскивания
-function onMouseDown(event) {
-    startDragging(event.clientX, event.clientY, this);
-}
-
-function onTouchStart(event) {
-    if (event.touches.length > 1) {
-        // Если два пальца, возвращаем элемент
-        if (activeElement) {
-            resetElement();
-        }
-        return;
+const updatePosition = (event) => {
+    const touch = event.touches ? event.touches[0] : event;
+    if (currentElement) {
+        currentElement.style.left = (touch.clientX - offsetX) + 'px';
+        currentElement.style.top = (touch.clientY - offsetY) + 'px';
     }
-    startDragging(event.touches[0].clientX, event.touches[0].clientY, this);
-}
+};
 
-// Общая функция для начала перетаскивания
-function startDragging(clientX, clientY, element) {
-    if (activeElement && activeElement !== element) return;
-
-    activeElement = element;
-    const position = getElementPosition(activeElement);
-    offsetX = clientX - position.left;
-    offsetY = clientY - position.top;
-
-    document.addEventListener('mousemove', onMouseMove);
-    document.addEventListener('mouseup', onMouseUp);
-    document.addEventListener('touchmove', onTouchMove);
-    document.addEventListener('touchend', onTouchEnd);
-}
-
-// Обработчик для перемещения элемента
-function onMouseMove(event) {
-    moveElement(event.clientX, event.clientY);
-}
-
-function onTouchMove(event) {
-    moveElement(event.touches[0].clientX, event.touches[0].clientY);
-}
-
-// Общая функция для перемещения элемента
-function moveElement(clientX, clientY) {
-    if (!activeElement) return;
-
-    activeElement.style.left = (clientX - offsetX) + 'px';
-    activeElement.style.top = (clientY - offsetY) + 'px';
-}
-
-// Обработчик для завершения перетаскивания
-function onMouseUp() {
-    finishDragging();
-}
-
-function onTouchEnd() {
-    finishDragging();
-}
-
-// Общая функция для завершения перетаскивания
-function finishDragging() {
-    if (activeElement) {
-        originalPosition[activeElement.id] = getElementPosition(activeElement);
-        activeElement = null;
-    }
-    removeDraggingListeners();
-}
-
-// Обработчик для двойного клика
-function onDoubleClick() {
-    if (activeElement) return;
-
-    activeElement = this;
-    this.style.backgroundColor = 'blue';
-    const position = getElementPosition(activeElement);
-    offsetX = event.clientX - position.left;
-    offsetY = event.clientY - position.top;
-
-    document.addEventListener('mousemove', onMouseMove);
-    document.addEventListener('click', onClickDetach);
-}
-
-// Обработчик для "отклеивания" элемента
-function onClickDetach(event) {
-    if (activeElement) {
-        activeElement.style.backgroundColor = 'red';
-        activeElement = null;
-        removeDraggingListeners();
-    }
-}
-
-// Функция для сброса элемента
-function resetElement() {
-    if (activeElement) {
-        const originalPos = originalPosition[activeElement.id];
-        if (originalPos) {
-            activeElement.style.left = originalPos.left + 'px';
-            activeElement.style.top = originalPos.top + 'px';
-        }
-        activeElement.style.backgroundColor = 'red';
-        activeElement = null;
-    }
-}
-
-// Удаление обработчиков перетаскивания
-function removeDraggingListeners() {
-    document.removeEventListener('mousemove', onMouseMove);
-    document.removeEventListener('mouseup', onMouseUp);
-    document.removeEventListener('touchmove', onTouchMove);
-    document.removeEventListener('touchend', onTouchEnd);
-}
-
-// Обработчик для клавиши Esc
-function onKeyDown(event) {
-    if (event.key === 'Escape') {
-        resetElement();
-    }
-}
-
-// Добавляем обработчики событий для каждого элемента
 targets.forEach(target => {
-    target.addEventListener('mousedown', onMouseDown);
-    target.addEventListener('dblclick', onDoubleClick);
-    target.addEventListener('touchstart', onTouchStart);
+    target.addEventListener('mousedown', (event) => {
+        if (isSticky) return;
+
+        isDragging = true;
+        currentElement = target;
+
+        offsetX = event.clientX - target.getBoundingClientRect().left;
+        offsetY = event.clientY - target.getBoundingClientRect().top;
+    });
+
+    target.addEventListener('touchstart', (event) => {
+        if (isSticky) return;
+
+        isDragging = true;
+        currentElement = target;
+
+        const touch = event.touches[0];
+        offsetX = touch.clientX - target.getBoundingClientRect().left;
+        offsetY = touch.clientY - target.getBoundingClientRect().top;
+    });
+
+    target.addEventListener('dblclick', () => {
+        isSticky = true;
+        if (currentElement !== target) {
+            currentElement = target;
+            originalPosition.top = target.style.top;
+            originalPosition.left = target.style.left;
+        }
+        target.style.backgroundColor = 'blue';
+    });
+
+    target.addEventListener('click', () => {
+        if (isSticky && currentElement === target) {
+            isSticky = false;
+            currentElement.style.backgroundColor = 'red';
+            currentElement = null;
+        }
+    });
 });
 
-// Добавляем обработчик нажатия клавиш
-document.addEventListener('keydown', onKeyDown);
+
+document.addEventListener('mousemove', (event) => {
+    if (isDragging) {
+        updatePosition(event);
+    }
+});
+
+document.addEventListener('touchmove', (event) => {
+    if (isDragging) {
+        updatePosition(event);
+    }
+});
+
+
+document.addEventListener('mouseup', () => {
+    if (isDragging) {
+        isDragging = false;
+        currentElement = null;
+    }
+});
+
+document.addEventListener('touchend', () => {
+    if (isDragging) {
+        isDragging = false;
+        currentElement = null;
+    }
+});
+
+
+document.addEventListener('touchstart', (event) => {
+    if (event.touches.length > 1) { 
+        if (currentElement) {
+            currentElement.style.top = originalPosition.top;
+            currentElement.style.left = originalPosition.left;
+            isDragging = false;
+            isSticky = false;
+            currentElement.style.backgroundColor = 'red';
+            currentElement = null;
+        }
+    }
+});
+
+
+targets.forEach(target => {
+    target.addEventListener('wheel', (event) => {
+        event.preventDefault(); 
+        let newWidth = parseInt(target.style.width) + (event.deltaY < 0 ? 10 : -10);
+        let newHeight = parseInt(target.style.height) + (event.deltaY < 0 ? 10 : -10);
+        
+        
+        if (newWidth >= minSize && newHeight >= minSize) {
+            target.style.width = newWidth + 'px';
+            target.style.height = newHeight + 'px';
+        }
+    });
+});
+
+document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && currentElement) {
+        currentElement.style.top = originalPosition.top;
+        currentElement.style.left = originalPosition.left;
+        isDragging = false;
+        isSticky = false;
+        currentElement.style.backgroundColor = 'red';
+        currentElement = null;
+    }
+});
