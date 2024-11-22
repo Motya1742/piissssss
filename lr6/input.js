@@ -28,12 +28,55 @@ targets.forEach(target => {
   document.addEventListener("touchstart", (e) => {
     touchTimeStart = new Date().getTime();
     if (e.touches.length > 1) {
-      resetPosition();
+      resetPosition(); // Сбрасываем позицию при втором касании
     }
   });
 
   document.addEventListener("touchmove", (e) => {
-    if (currentAction === 'follow') {
+    if (currentAction === 'follow' || currentAction === 'touch_move') {
       if (currentDiv) {
         currentDiv.style.left = `${e.touches[0].clientX - offsetX}px`;
-        currentDiv.style.top = `${e.touches[0
+        currentDiv.style.top = `${e.touches[0].clientY - offsetY}px`;
+      }
+    }
+  });
+
+  target.addEventListener("touchend", () => {
+    if (currentDiv && (currentAction === 'touch_move' || currentAction === 'touch_dblClick')) {
+      if (checkDoubleTouch() && new Date().getTime() - touchTimeStart > 100) {
+        currentAction = 'touch_dblClick';
+        target.style.backgroundColor = '#F4F4F4';
+        return;
+      }
+      currentDiv = null;
+      currentAction = null;
+      initialPosX = target.offsetLeft;
+      initialPosY = target.offsetTop;
+      target.style.backgroundColor = initialColor;
+      target.style.zIndex = '1';
+    } else if (currentAction === 'follow') {
+      currentDiv = null;
+      currentAction = null;
+      target.style.backgroundColor = initialColor;
+      target.style.zIndex = '1';
+    }
+  });
+
+  const resetPosition = () => {
+    if (currentDiv) {
+      currentDiv.style.left = `${initialPosX}px`;
+      currentDiv.style.top = `${initialPosY}px`;
+      currentDiv.style.backgroundColor = initialColor;
+      currentDiv.style.zIndex = '1';
+      currentDiv = null;
+      currentAction = null;
+    }
+  };
+
+  const checkDoubleTouch = () => {
+    const currentTime = new Date().getTime();
+    const timeDiff = currentTime - previousTouchTime;
+    previousTouchTime = currentTime;
+    return timeDiff < 300;
+  };
+});
