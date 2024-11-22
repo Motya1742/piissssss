@@ -7,50 +7,41 @@ let offsetX, offsetY;
 let currentDiv = null;
 let currentAction = null;
 let previousTouchTime = 0;
+let initialPosX, initialPosY; // Храним начальные позиции для сброса
 
 targets.forEach(target => {
-  let initialPosX = target.offsetLeft;
-  let initialPosY = target.offsetTop;
-
   target.addEventListener("touchstart", (e) => {
     if (e.touches.length === 1) {
-      if (!currentDiv && currentAction !== 'touch_dblClick') {
+      if (!currentDiv) {
         currentDiv = target;
         currentAction = 'touch_move';
         offsetX = e.touches[0].clientX - target.offsetLeft;
         offsetY = e.touches[0].clientY - target.offsetTop;
-        target.style.zIndex = targets.length;
-      } else if (currentAction === 'touch_dblClick') {
-        currentAction = 'follow'; // Режим "следующий за пальцем"
-      }
-    }
-  });
 
-  document.addEventListener("touchstart", (e) => {
-    if (e.touches.length > 1) {
+        // Сохраняем начальные позиции для сброса
+        initialPosX = target.offsetLeft;
+        initialPosY = target.offsetTop;
+
+        target.style.zIndex = targets.length;
+      }
+    } else if (e.touches.length > 1) {
       resetPosition(); // Сбрасываем позицию при втором касании
     }
   });
 
   document.addEventListener("touchmove", (e) => {
-    if (currentAction === 'follow' || currentAction === 'touch_move') {
-      if (currentDiv) {
-        currentDiv.style.left = `${e.touches[0].clientX - offsetX}px`;
-        currentDiv.style.top = `${e.touches[0].clientY - offsetY}px`;
-      }
+    if (currentAction === 'touch_move' && currentDiv) {
+      currentDiv.style.left = `${e.touches[0].clientX - offsetX}px`;
+      currentDiv.style.top = `${e.touches[0].clientY - offsetY}px`;
     }
   });
 
   target.addEventListener("touchend", () => {
     if (currentDiv) {
-      if (currentAction === 'touch_move' || currentAction === 'touch_dblClick') {
-        if (checkDoubleTouch() && new Date().getTime() - previousTouchTime < 300) {
-          currentAction = 'touch_dblClick';
-          target.style.backgroundColor = '#F4F4F4';
-          return;
-        }
-        resetPosition();
-      } else if (currentAction === 'follow') {
+      if (checkDoubleTouch() && new Date().getTime() - previousTouchTime < 300) {
+        currentDiv.style.backgroundColor = '#F4F4F4';
+        currentAction = 'follow'; // Переключаем на режим следования
+      } else {
         resetPosition();
       }
     }
