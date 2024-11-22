@@ -7,7 +7,6 @@ let originalPosition = { top: 0, left: 0 };
 let touchStartPosition = { x: 0, y: 0 };
 const minSize = 40; 
 
-
 const updatePosition = (event) => {
     const touch = event.touches ? event.touches[0] : event;
     if (currentElement) {
@@ -42,8 +41,8 @@ targets.forEach(target => {
         isSticky = true;
         if (currentElement !== target) {
             currentElement = target;
-            originalPosition.top = target.style.top;
-            originalPosition.left = target.style.left;
+            originalPosition.top = target.style.top || '0px';
+            originalPosition.left = target.style.left || '0px';
         }
         target.style.backgroundColor = 'blue';
     });
@@ -57,7 +56,6 @@ targets.forEach(target => {
     });
 });
 
-
 document.addEventListener('mousemove', (event) => {
     if (isDragging) {
         updatePosition(event);
@@ -69,7 +67,6 @@ document.addEventListener('touchmove', (event) => {
         updatePosition(event);
     }
 });
-
 
 document.addEventListener('mouseup', () => {
     if (isDragging) {
@@ -85,7 +82,6 @@ document.addEventListener('touchend', () => {
     }
 });
 
-
 document.addEventListener('touchstart', (event) => {
     if (event.touches.length > 1) { 
         if (currentElement) {
@@ -99,13 +95,11 @@ document.addEventListener('touchstart', (event) => {
     }
 });
 
-
 targets.forEach(target => {
     target.addEventListener('wheel', (event) => {
         event.preventDefault(); 
         let newWidth = parseInt(target.style.width) + (event.deltaY < 0 ? 10 : -10);
         let newHeight = parseInt(target.style.height) + (event.deltaY < 0 ? 10 : -10);
-        
         
         if (newWidth >= minSize && newHeight >= minSize) {
             target.style.width = newWidth + 'px';
