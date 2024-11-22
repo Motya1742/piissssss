@@ -39,11 +39,15 @@ targets.forEach(target => {
   target.addEventListener("touchend", () => {
     if (currentDiv) {
       if (checkDoubleTouch() && new Date().getTime() - previousTouchTime < 300) {
-        currentDiv.style.backgroundColor = '#F4F4F4';
+        currentDiv.style.backgroundColor = 'blue'; // Меняем цвет на синий
         currentAction = 'follow'; // Переключаем на режим следования
       } else {
         resetPosition();
       }
+    } else if (currentAction === 'follow') {
+      currentDiv.style.backgroundColor = initialColor; // Возвращаем цвет на красный
+      currentDiv = null; // Сбрасываем текущее состояние
+      currentAction = null;
     }
   });
 
@@ -51,7 +55,7 @@ targets.forEach(target => {
     if (currentDiv) {
       currentDiv.style.left = `${initialPosX}px`;
       currentDiv.style.top = `${initialPosY}px`;
-      currentDiv.style.backgroundColor = initialColor;
+      currentDiv.style.backgroundColor = initialColor; // Возвращаем цвет
       currentDiv.style.zIndex = '1';
       currentDiv = null;
       currentAction = null;
