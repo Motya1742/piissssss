@@ -6,27 +6,27 @@ if (targets.length > 0) {
 let offsetX, offsetY;
 let currentDiv = null;
 let currentAction = null;
-let previousTouchTime;
-let touchTimeStart;
+let previousTouchTime = 0;
 
 targets.forEach(target => {
   let initialPosX = target.offsetLeft;
   let initialPosY = target.offsetTop;
 
   target.addEventListener("touchstart", (e) => {
-    if (!currentDiv && currentAction !== 'touch_dblClick') {
-      currentDiv = target;
-      currentAction = 'touch_move';
-      offsetX = e.touches[0].clientX - target.offsetLeft;
-      offsetY = e.touches[0].clientY - target.offsetTop;
-      target.style.zIndex = targets.length;
-    } else if (currentAction === 'touch_dblClick') {
-      currentAction = 'follow'; // Режим "следующий за пальцем"
+    if (e.touches.length === 1) {
+      if (!currentDiv && currentAction !== 'touch_dblClick') {
+        currentDiv = target;
+        currentAction = 'touch_move';
+        offsetX = e.touches[0].clientX - target.offsetLeft;
+        offsetY = e.touches[0].clientY - target.offsetTop;
+        target.style.zIndex = targets.length;
+      } else if (currentAction === 'touch_dblClick') {
+        currentAction = 'follow'; // Режим "следующий за пальцем"
+      }
     }
   });
 
   document.addEventListener("touchstart", (e) => {
-    touchTimeStart = new Date().getTime();
     if (e.touches.length > 1) {
       resetPosition(); // Сбрасываем позицию при втором касании
     }
@@ -42,23 +42,17 @@ targets.forEach(target => {
   });
 
   target.addEventListener("touchend", () => {
-    if (currentDiv && (currentAction === 'touch_move' || currentAction === 'touch_dblClick')) {
-      if (checkDoubleTouch() && new Date().getTime() - touchTimeStart > 100) {
-        currentAction = 'touch_dblClick';
-        target.style.backgroundColor = '#F4F4F4';
-        return;
+    if (currentDiv) {
+      if (currentAction === 'touch_move' || currentAction === 'touch_dblClick') {
+        if (checkDoubleTouch() && new Date().getTime() - previousTouchTime < 300) {
+          currentAction = 'touch_dblClick';
+          target.style.backgroundColor = '#F4F4F4';
+          return;
+        }
+        resetPosition();
+      } else if (currentAction === 'follow') {
+        resetPosition();
       }
-      currentDiv = null;
-      currentAction = null;
-      initialPosX = target.offsetLeft;
-      initialPosY = target.offsetTop;
-      target.style.backgroundColor = initialColor;
-      target.style.zIndex = '1';
-    } else if (currentAction === 'follow') {
-      currentDiv = null;
-      currentAction = null;
-      target.style.backgroundColor = initialColor;
-      target.style.zIndex = '1';
     }
   });
 
