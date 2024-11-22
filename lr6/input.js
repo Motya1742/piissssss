@@ -19,6 +19,7 @@ targets.forEach(target => {
         const touch = event.touches[0];
 
         if (event.touches.length === 1) {
+            // Перемещение элемента
             if (!isSticky) {
                 isDragging = true;
                 currentElement = target;
@@ -35,10 +36,7 @@ targets.forEach(target => {
             if (currentElement) {
                 currentElement.style.top = originalPosition.top;
                 currentElement.style.left = originalPosition.left;
-                isDragging = false;
-                isSticky = false;
-                currentElement.style.backgroundColor = 'red';
-                currentElement = null;
+                resetElement();
             }
         }
     });
@@ -51,8 +49,7 @@ targets.forEach(target => {
     target.addEventListener('click', () => {
         if (isSticky && currentElement === target) {
             isSticky = false;
-            currentElement.style.backgroundColor = 'red';
-            currentElement = null;
+            resetElement();
         }
     });
 });
@@ -66,21 +63,17 @@ document.addEventListener('touchmove', (event) => {
 document.addEventListener('touchend', () => {
     if (isDragging) {
         isDragging = false;
+        currentElement.style.backgroundColor = 'red'; // Возврат цвета
         currentElement = null;
     } else if (currentElement) {
-        currentElement.style.backgroundColor = 'red'; // Возврат цвета
+        resetElement(); // Если элемент был "прилипшим", сбрасываем
     }
 });
 
-document.addEventListener('touchstart', (event) => {
-    if (event.touches.length > 1) { 
-        if (currentElement) {
-            currentElement.style.top = originalPosition.top;
-            currentElement.style.left = originalPosition.left;
-            isDragging = false;
-            isSticky = false;
-            currentElement.style.backgroundColor = 'red';
-            currentElement = null;
-        }
+const resetElement = () => {
+    if (currentElement) {
+        currentElement.style.backgroundColor = 'red';
+        currentElement = null;
+        isSticky = false; // Сбрасываем состояние "липкости"
     }
-});
+};
