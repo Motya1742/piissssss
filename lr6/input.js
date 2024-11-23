@@ -1,79 +1,118 @@
 const targets = document.querySelectorAll('.target');
+
 let isDragging = false;
-let isSticky = false;
-let offsetX, offsetY;
+let isPinned = false;
 let currentElement = null;
-let originalPosition = { top: 0, left: 0 };
-let previousTouchTime = 0; // Сохраняем это изменение
+let offsetX, offsetY;
+let originalPosition = {};
+let lastTouchTime = 0;
+const doubleTapDelay = 300; 
+let isClickBlocked = false; 
 
-const updatePosition = (event) => {
-    const touch = event.touches ? event.touches[0] : event;
-    if (currentElement) {
-        currentElement.style.left = (touch.clientX - offsetX) + 'px';
-        currentElement.style.top = (touch.clientY - offsetY) + 'px';
+function unpinElement(event) {
+    isPinned = false;
+    currentElement.style.backgroundColor = 'red'; 
+
+    const rect = currentElement.getBoundingClientRect();
+    const elementCenterX = rect.width / 2;
+    const elementCenterY = rect.height / 2;
+
+    const newLeft = event.touches[0].clientX - elementCenterX;
+    const newTop = event.touches[0].clientY - elementCenterY;
+
+    currentElement.style.left = `${newLeft}px`;
+    currentElement.style.top = `${newTop}px`;
+    currentElement = null;
+}
+
+function initDrag(event) {
+    if (isClickBlocked) return;
+    if (isPinned) {
+        unpinElement(event); 
+        return;
     }
-};
 
-targets.forEach(target => {
-    target.addEventListener('touchstart', (event) => {
-        const touch = event.touches[0];
+    currentElement = event.currentTarget;
+    isDragging = true;
 
-        if (event.touches.length === 1) {
-            // Перемещение элемента
-            if (!isSticky) {
-                isDragging = true;
-                currentElement = target;
+    const rect = currentElement.getBoundingClientRect();
+    offsetX = event.touches[0].clientX - rect.left;
+    offsetY = event.touches[0].clientY - rect.top;
 
-                offsetX = touch.clientX - target.getBoundingClientRect().left;
-                offsetY = touch.clientY - target.getBoundingClientRect().top;
+    originalPosition.left = parseInt(currentElement.style.left) || 0;
+    originalPosition.top = parseInt(currentElement.style.top) || 0;
+}
 
-                // Сохраняем начальные позиции
-                originalPosition.top = target.style.top || '0px';
-                originalPosition.left = target.style.left || '0px';
-            }
-        } else if (event.touches.length > 1) {
-            // Возврат на исходную позицию при втором касании
-            if (currentElement) {
-                currentElement.style.top = originalPosition.top;
-                currentElement.style.left = originalPosition.left;
-                resetElement();
-            }
+function onTouchStart(event) {
+    const currentTime = Date.now();
+
+    if (event.touches.length === 1) {
+        if (currentTime - lastTouchTime <= doubleTapDelay) {
+            onDoubleClick(event);
+        } else if (!isPinned) {
+            initDrag(event);
         }
-    });
-
-    target.addEventListener('dblclick', () => {
-        isSticky = true;
-        target.style.backgroundColor = 'blue';
-    });
-
-    target.addEventListener('click', () => {
-        if (isSticky && currentElement === target) {
-            isSticky = false;
-            resetElement(); // Вызываем сброс
-        }
-    });
-});
-
-document.addEventListener('touchmove', (event) => {
-    if (isDragging) {
-        updatePosition(event);
     }
-});
 
-document.addEventListener('touchend', () => {
+    lastTouchTime = currentTime;
+}
+
+function onEnd() {
     if (isDragging) {
         isDragging = false;
-        currentElement.style.backgroundColor = 'red'; // Возврат цвета
-        currentElement = null;
-    } else if (currentElement) {
-        resetElement(); // Если элемент был "прилипшим", сбрасываем
     }
+}
+
+function onMove(event) {
+    if (isDragging || isPinned) {
+        const clientX = event.touches[0].clientX;
+        const clientY = event.touches[0].clientY;
+
+        if (event.touches.length > 1) {
+            resetPosition(); 
+            return; 
+        }
+
+        currentElement.style.left = `${clientX - offsetX}px`;
+        currentElement.style.top = `${clientY - offsetY}px`;
+    }
+}
+
+function onDoubleClick(event) {
+    isClickBlocked = true; 
+
+    if (!isPinned) {
+        isPinned = true;
+        currentElement = event.currentTarget;
+        currentElement.style.backgroundColor = 'blue'; 
+    } else {
+        unpinElement(event);
+    }
+
+    setTimeout(() => {
+        isClickBlocked = false;
+    }, doubleTapDelay);
+}
+
+function resetPosition() {
+    if (currentElement) {
+        currentElement.style.left = `${originalPosition.left}px`;
+        currentElement.style.top = `${originalPosition.top}px`;
+        isDragging = false;
+        isPinned = false;
+        currentElement.style.backgroundColor = 'red'; 
+        currentElement = null;
+    }
+}
+
+function onTouchEnd() {
+    onEnd();
+}
+
+targets.forEach(target => {
+    target.addEventListener('touchstart', onTouchStart);
+    target.addEventListener('dblclick', onDoubleClick);
 });
 
-const resetElement = () => {
-    if (currentElement) {
-        currentElement.style.backgroundColor = 'red';
-        currentElement = null;
-        isSticky = false; // Сбрасываем состояние "липкости"
-    }
-};
+document.addEventListener('touchmove', onMove);
+document.addEventListener('touchend', onTouchEnd);
