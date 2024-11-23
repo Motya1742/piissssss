@@ -4,6 +4,7 @@ let isSticky = false;
 let offsetX, offsetY;
 let currentElement = null;
 let originalPosition = { top: 0, left: 0 };
+let previousTouchTime = 0; // Сохраняем это изменение
 
 const updatePosition = (event) => {
     const touch = event.touches ? event.touches[0] : event;
@@ -47,9 +48,8 @@ targets.forEach(target => {
 
     target.addEventListener('click', () => {
         if (isSticky && currentElement === target) {
-            // Удаляем "липкость" при одиночном нажатии
             isSticky = false;
-            // Ничего не делаем с цветом здесь
+            resetElement(); // Вызываем сброс
         }
     });
 });
@@ -66,8 +66,7 @@ document.addEventListener('touchend', () => {
         currentElement.style.backgroundColor = 'red'; // Возврат цвета
         currentElement = null;
     } else if (currentElement) {
-        // Если элемент был "прилипшим", сбрасываем цвет
-        resetElement();
+        resetElement(); // Если элемент был "прилипшим", сбрасываем
     }
 });
 
