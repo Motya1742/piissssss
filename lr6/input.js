@@ -116,4 +116,3 @@ targets.forEach(target => {
 
 document.addEventListener('touchmove', onMove);
 document.addEventListener('touchend', onTouchEnd);
-document.addEventListener('touchend', onTouchEnd);
